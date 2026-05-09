@@ -66,6 +66,7 @@ A massa pública (ex.: GitHub Pages) é **somente leitura**. Para **persistir** 
 ```bash
 # No repositório da API de teste, após clonar
 git clone https://github.com/ThiagoLifters/api_test.git
+cd api_test
 npm install -g json-server
 json-server --watch db.json --port 3001
 ```
