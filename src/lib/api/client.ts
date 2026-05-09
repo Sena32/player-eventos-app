@@ -15,7 +15,7 @@ function normalizeBase(url: string): string {
 }
 
 function resolveExternalBase(): string {
-  const raw = process.env.EXTERNAL_API_URL;
+  const raw = process.env.NEXT_PUBLIC_EXTERNAL_API_URL;
   if (!raw) {
     return "";
   }
@@ -29,7 +29,7 @@ export type ApiClientOptions = RequestInit & {
 
 /**
  * Cliente HTTP tipado para a API externa.
- * Usa EXTERNAL_API_URL; paths relativos são resolvidos contra essa base.
+ * Usa NEXT_PUBLIC_EXTERNAL_API_URL; paths relativos são resolvidos contra essa base.
  */
 export async function apiClient<T>(
   path: string,
@@ -43,7 +43,7 @@ export async function apiClient<T>(
   if (!skipJsonHeaders && !mergedHeaders.has("Content-Type")) {
     mergedHeaders.set("Content-Type", "application/json");
   }
-  const key = process.env.EXTERNAL_API_KEY;
+  const key = process.env.NEXT_PUBLIC_EXTERNAL_API_KEY;
   if (key && !mergedHeaders.has("Authorization")) {
     mergedHeaders.set("Authorization", `Bearer ${key}`);
   }
