@@ -253,8 +253,7 @@ export function EventDetailView({ eventId }: { eventId: string }) {
             <DialogHeader>
               <DialogTitle>Registrar check-in</DialogTitle>
               <DialogDescription>
-                Registre entrada ou saída. A API de dados é somente leitura; o histórico é
-                atualizado neste painel conforme as regras de negócio.
+                Registre entrada ou saída.
               </DialogDescription>
             </DialogHeader>
 

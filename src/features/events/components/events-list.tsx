@@ -5,6 +5,7 @@ import {
   ArrowUpAZ,
   Calendar,
   ChevronRight,
+  Filter,
   Loader2,
   MapPin,
   Search,
@@ -25,6 +26,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
   Table,
   TableBody,
   TableCell,
@@ -32,6 +40,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   filterAndSortEvents,
   type EventDateSort,
@@ -62,13 +75,26 @@ function formatParticipants(n: number): string {
   return new Intl.NumberFormat("pt-BR").format(n);
 }
 
+const filterInputClass =
+  "h-10 min-h-10 border-primary/30 bg-background py-0 pr-3 pl-9 text-sm leading-snug";
+
+const filterSelectClass = cn(
+  "border-primary/30 bg-background text-sm ring-offset-background",
+  "focus-visible:border-primary focus-visible:ring-primary/30",
+  "box-border flex h-10 min-h-10 w-full rounded-lg border px-3 leading-snug",
+  "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
+);
+
 export function EventsListSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
-        <Skeleton className="h-10 w-full sm:max-w-sm" />
-        <Skeleton className="h-10 w-full sm:w-40" />
-        <Skeleton className="h-10 w-full sm:w-56" />
+      <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
+        <div className="flex min-w-0 flex-1 gap-2 lg:max-w-md">
+          <Skeleton className="h-10 min-w-0 flex-1" />
+          <Skeleton className="h-10 w-10 shrink-0 lg:hidden" />
+        </div>
+        <Skeleton className="hidden h-10 w-full sm:w-44 lg:block" />
+        <Skeleton className="hidden h-10 w-full sm:min-w-[14rem] sm:max-w-xs lg:block" />
       </div>
       <div className="hidden rounded-xl border md:block">
         <Skeleton className="h-56 w-full rounded-xl" />
@@ -88,6 +114,7 @@ export function EventsList() {
 
   const urlQ = searchParams.get("q") ?? "";
   const [inputQ, setInputQ] = useState(urlQ);
+  const [filtersSheetOpen, setFiltersSheetOpen] = useState(false);
   const debouncedQ = useDebounce(inputQ, 400);
 
   // Sincroniza o campo com a URL (ex.: voltar no navegador, link compartilhado).
@@ -203,49 +230,68 @@ export function EventsList() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-end">
-            <div className="min-w-0 flex-1 lg:max-w-md">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_11rem_minmax(17rem,auto)] lg:items-end lg:gap-x-4">
+            <div className="flex min-w-0 flex-col gap-1.5">
               <label
                 htmlFor="event-search"
-                className="text-muted-foreground mb-1.5 block text-xs font-medium"
+                className="text-muted-foreground text-xs font-medium"
               >
                 Buscar por nome
               </label>
-              <div className="relative">
-                <Search
-                  className="text-primary/70 pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
-                  aria-hidden
-                />
-                <Input
-                  id="event-search"
-                  value={inputQ}
-                  onChange={(e) => setInputQ(e.target.value)}
-                  placeholder="Nome do evento…"
-                  className="border-primary/30 bg-background pl-9"
-                  autoComplete="off"
-                  aria-describedby="event-search-hint"
-                />
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="relative min-w-0 flex-1">
+                  <Search
+                    className="text-primary/70 pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+                    aria-hidden
+                  />
+                  <Input
+                    id="event-search"
+                    value={inputQ}
+                    onChange={(e) => setInputQ(e.target.value)}
+                    placeholder="Nome do evento…"
+                    className={filterInputClass}
+                    autoComplete="off"
+                    aria-describedby="event-search-hint"
+                  />
+                </div>
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="border-primary/40 text-primary hover:bg-primary/10 size-10 shrink-0 lg:hidden"
+                        aria-expanded={filtersSheetOpen}
+                        aria-controls="events-filters-sheet"
+                        aria-label="Abrir filtros por status e ordenação da lista de eventos"
+                        onClick={() => setFiltersSheetOpen(true)}
+                      >
+                        <Filter className="size-4" aria-hidden />
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="bottom" align="end" className="max-w-[16rem]">
+                    Abre um painel lateral com filtro por status e ordenação por data. Em telas
+                    largas, os filtros ficam ao lado da busca.
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <p id="event-search-hint" className="sr-only">
                 A lista é filtrada conforme você digita.
               </p>
             </div>
 
-            <div className="w-full sm:w-44">
+            <div className="hidden min-w-0 flex-col gap-1.5 lg:flex">
               <label
                 htmlFor="event-status"
-                className="text-muted-foreground mb-1.5 block text-xs font-medium"
+                className="text-muted-foreground text-xs font-medium"
               >
                 Status
               </label>
               <select
                 id="event-status"
-                className={cn(
-                  "border-primary/30 bg-background ring-offset-background",
-                  "focus-visible:border-primary focus-visible:ring-primary/30",
-                  "flex h-10 w-full rounded-lg border px-3 py-2 text-sm",
-                  "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
-                )}
+                className={filterSelectClass}
                 value={statusFilter || "all"}
                 onChange={(e) => updateStatus(e.target.value)}
               >
@@ -256,46 +302,145 @@ export function EventsList() {
               </select>
             </div>
 
-            <div className="w-full sm:min-w-[14rem] sm:max-w-xs">
-              <span className="text-muted-foreground mb-1.5 block text-xs font-medium">
+            <div className="hidden min-w-0 flex-col gap-1.5 lg:flex">
+              <span
+                id="event-sort-label"
+                className="text-muted-foreground text-xs font-medium"
+              >
                 Ordenar por data
               </span>
-              <div className="flex gap-2">
+              <div
+                className="flex min-h-10 gap-2"
+                role="group"
+                aria-labelledby="event-sort-label"
+              >
                 <Button
                   type="button"
                   variant={dateSort === "asc" ? "default" : "outline"}
-                  size="sm"
                   className={cn(
-                    "flex-1 sm:flex-initial",
+                    "h-10 min-h-10 flex-1 px-3 text-sm sm:flex-initial",
                     dateSort !== "asc" && "border-primary/30 text-primary",
                   )}
                   onClick={() => updateOrdem("asc")}
                   aria-pressed={dateSort === "asc"}
                   aria-label={sortLabels.asc}
                 >
-                  <ArrowDownAZ className="mr-1.5 size-4" aria-hidden />
-                  <span className="hidden sm:inline">Mais antiga</span>
-                  <span className="sm:hidden">Antiga</span>
+                  <ArrowDownAZ className="mr-1.5 size-4 shrink-0" aria-hidden />
+                  <span>Mais antiga</span>
                 </Button>
                 <Button
                   type="button"
                   variant={dateSort === "desc" ? "default" : "outline"}
-                  size="sm"
                   className={cn(
-                    "flex-1 sm:flex-initial",
+                    "h-10 min-h-10 flex-1 px-3 text-sm sm:flex-initial",
                     dateSort !== "desc" && "border-primary/30 text-primary",
                   )}
                   onClick={() => updateOrdem("desc")}
                   aria-pressed={dateSort === "desc"}
                   aria-label={sortLabels.desc}
                 >
-                  <ArrowUpAZ className="mr-1.5 size-4" aria-hidden />
-                  <span className="hidden sm:inline">Mais recente</span>
-                  <span className="sm:hidden">Recente</span>
+                  <ArrowUpAZ className="mr-1.5 size-4 shrink-0" aria-hidden />
+                  <span>Mais recente</span>
                 </Button>
               </div>
             </div>
           </div>
+
+          <Sheet open={filtersSheetOpen} onOpenChange={setFiltersSheetOpen}>
+            <SheetContent
+              id="events-filters-sheet"
+              side="left"
+              className={cn(
+                "border-sidebar-border bg-sidebar text-sidebar-foreground gap-0 overflow-y-auto p-0",
+                "w-[min(100vw-1rem,20rem)] sm:max-w-sm",
+              )}
+            >
+              <SheetHeader className="border-sidebar-border border-b bg-sidebar-accent/40 px-4 py-4 text-left">
+                <SheetTitle
+                  id="events-filters-sheet-title"
+                  className="text-sidebar-accent-foreground font-heading text-base"
+                >
+                  Filtros da lista
+                </SheetTitle>
+                <SheetDescription
+                  id="events-filters-sheet-desc"
+                  className="text-sidebar-foreground/80"
+                >
+                  Ajuste o status e a ordenação por data. A busca por nome continua no campo
+                  acima do botão de filtros.
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="flex flex-col gap-6 p-4">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="event-status-sheet"
+                    className="text-sidebar-accent-foreground block text-xs font-medium"
+                  >
+                    Status do evento
+                  </label>
+                  <select
+                    id="event-status-sheet"
+                    className={cn(
+                      "border-sidebar-border bg-sidebar-accent/30 text-sidebar-foreground ring-sidebar-ring",
+                      "focus-visible:ring-sidebar-ring focus-visible:border-sidebar-primary",
+                      "flex h-10 w-full rounded-lg border px-3 py-2 text-sm",
+                      "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
+                    )}
+                    value={statusFilter || "all"}
+                    onChange={(e) => updateStatus(e.target.value)}
+                  >
+                    <option value="all">Todos</option>
+                    <option value="active">Ativo</option>
+                    <option value="closed">Encerrado</option>
+                    <option value="cancelled">Cancelado</option>
+                  </select>
+                </div>
+
+                <fieldset className="space-y-3 border-0 p-0">
+                  <legend className="text-sidebar-accent-foreground mb-1 block text-xs font-medium">
+                    Ordenar por data
+                  </legend>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="button"
+                      variant={dateSort === "asc" ? "default" : "outline"}
+                      size="sm"
+                      className={cn(
+                        "justify-start border-sidebar-border",
+                        dateSort === "asc"
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                          : "bg-sidebar-accent/20 text-sidebar-accent-foreground hover:bg-sidebar-accent/40",
+                      )}
+                      onClick={() => updateOrdem("asc")}
+                      aria-pressed={dateSort === "asc"}
+                      aria-label={sortLabels.asc}
+                    >
+                      <ArrowDownAZ className="mr-2 size-4 shrink-0" aria-hidden />
+                      Mais antiga primeiro
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={dateSort === "desc" ? "default" : "outline"}
+                      size="sm"
+                      className={cn(
+                        "justify-start border-sidebar-border",
+                        dateSort === "desc"
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
+                          : "bg-sidebar-accent/20 text-sidebar-accent-foreground hover:bg-sidebar-accent/40",
+                      )}
+                      onClick={() => updateOrdem("desc")}
+                      aria-pressed={dateSort === "desc"}
+                      aria-label={sortLabels.desc}
+                    >
+                      <ArrowUpAZ className="mr-2 size-4 shrink-0" aria-hidden />
+                      Mais recente primeiro
+                    </Button>
+                  </div>
+                </fieldset>
+              </div>
+            </SheetContent>
+          </Sheet>
         </CardContent>
       </Card>
 

@@ -7,12 +7,15 @@ import { NavItem } from "@/components/layout/nav-item";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/store/ui.store";
 import { Logo } from "../ui/logo";
+import { useTheme } from "next-themes";
 
 export function Sidebar() {
   const isOpen = useUIStore((s) => s.isSidebarOpen);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
+  const {  resolvedTheme } = useTheme();
 
+  const isDark = resolvedTheme === "dark";
   const showLabels = isOpen;
 
   return (
@@ -43,7 +46,7 @@ export function Sidebar() {
         >
           {showLabels ? (
             <div className="flex min-w-0 flex-col items-center justify-center ">
-              <Logo variant="dark" />
+              <Logo variant={isDark ? "dark" : "light"} />
             </div>
           ) : (
             <span className="sr-only">Player Eventos</span>
