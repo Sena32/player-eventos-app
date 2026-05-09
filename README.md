@@ -37,12 +37,14 @@ cp .env.example .env.local
 
 
 Sem `NEXT_PUBLIC_EXTERNAL_API_URL`, as rotas do BFF retornam erro de configuração (503).
+## Antes de Rodar vá para a proxima seção e obtenha o json-server rodando localmente para obter a NEXT_PUBLIC_EXTERNAL_API_URL
 
 ### Desenvolvimento
 
 ```bash
 npm run dev
 ```
+
 
 Abra [http://localhost:3000](http://localhost:3000). A raiz `**/**` redireciona para `**/events**` (listagem).
 
