@@ -46,8 +46,8 @@ export const checkinSchema = z.object({
 
 export const eventDetailSchema = eventListItemSchema.extend({
   description: z.string().optional(),
-  participants: z.array(participantSchema),
-  checkins: z.array(checkinSchema),
+  participants: z.array(participantSchema).default([]),
+  checkins: z.array(checkinSchema).default([]),
 });
 
 export type EventStatus = z.infer<typeof eventStatusSchema>;

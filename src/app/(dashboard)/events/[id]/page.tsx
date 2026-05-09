@@ -8,7 +8,7 @@ export default async function EventDetailPage({
   const { id } = await params;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <EventDetailView eventId={id} />
     </div>
   );

@@ -364,7 +364,7 @@ export function EventsList() {
                       <TableCell className="font-medium">
                         <Link
                           href={`/events/${encodeURIComponent(event.id)}`}
-                          className="text-primary inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
+                          className="inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
                         >
                           {event.name}
                         </Link>
