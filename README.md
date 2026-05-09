@@ -59,7 +59,8 @@ Abra [http://localhost:3000](http://localhost:3000). A raiz `**/**` redireciona 
 | `npm run test:e2e`              | Playwright                     |
 
 
-### API local com mutações (opcional)
+### API local com mutações - Optei por Usar Essa Opção   
+Caso queira precise sera necessario alteracoes nas chamadas de api no caso os endpoints
 
 A massa pública (ex.: GitHub Pages) é **somente leitura**. Para **persistir** check-ins em disco durante o desenvolvimento, use [json-server](https://github.com/typicode/json-server) com o repositório de dados de teste (ex.: `api_test`):
 
