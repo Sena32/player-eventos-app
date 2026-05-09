@@ -16,7 +16,7 @@ Stack principal: **Next.js 16** (App Router), **React 19**, **TypeScript**, **Ta
 ### Instalação
 
 ```bash
-git clone <url-do-repositório>
+git clone git@github.com:Sena32/player-eventos-app.git
 cd player-eventos-app
 npm install
 ```
@@ -29,10 +29,12 @@ Copie o exemplo e ajuste a URL da API:
 cp .env.example .env.local
 ```
 
-| Variável | Descrição |
-|----------|-----------|
+
+| Variável                       | Descrição                                                                                                     |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_EXTERNAL_API_URL` | Base da API consumida pelo BFF (`/api/events/*`). Ex.: JSON estático (GitHub Pages) ou **json-server** local. |
-| `NEXT_PUBLIC_EXTERNAL_API_KEY` | Opcional; enviada como `Authorization: Bearer` se preenchida. |
+| `NEXT_PUBLIC_EXTERNAL_API_KEY` | Opcional; enviada como `Authorization: Bearer` se preenchida.                                                 |
+
 
 Sem `NEXT_PUBLIC_EXTERNAL_API_URL`, as rotas do BFF retornam erro de configuração (503).
 
@@ -42,18 +44,20 @@ Sem `NEXT_PUBLIC_EXTERNAL_API_URL`, as rotas do BFF retornam erro de configuraç
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000). A raiz **`/`** redireciona para **`/events`** (listagem).
+Abra [http://localhost:3000](http://localhost:3000). A raiz `**/**` redireciona para `**/events**` (listagem).
 
 ### Outros comandos úteis
 
-| Comando | Uso |
-|---------|-----|
-| `npm run build` | Build de produção |
-| `npm run start` | Servidor após `build` |
-| `npm run lint` | ESLint |
-| `npm run type-check` | TypeScript sem emitir arquivos |
-| `npm test` / `npm run test:run` | Vitest |
-| `npm run test:e2e` | Playwright |
+
+| Comando                         | Uso                            |
+| ------------------------------- | ------------------------------ |
+| `npm run build`                 | Build de produção              |
+| `npm run start`                 | Servidor após `build`          |
+| `npm run lint`                  | ESLint                         |
+| `npm run type-check`            | TypeScript sem emitir arquivos |
+| `npm test` / `npm run test:run` | Vitest                         |
+| `npm run test:e2e`              | Playwright                     |
+
 
 ### API local com mutações (opcional)
 
@@ -61,6 +65,7 @@ A massa pública (ex.: GitHub Pages) é **somente leitura**. Para **persistir** 
 
 ```bash
 # No repositório da API de teste, após clonar
+git clone https://github.com/ThiagoLifters/api_test.git
 npm install -g json-server
 json-server --watch db.json --port 3001
 ```
@@ -77,26 +82,20 @@ O BFF detecta o formato “coleções separadas” (`/events`, `/participants`, 
 
 ## Decisões técnicas e justificativas
 
-1. **Next.js App Router + Route Handlers como BFF**  
-   O browser chama apenas o próprio domínio (`/api/events/...`). Isso evita expor CORS e chaves em cenários futuros e permite adaptar **uma** API de leitura estática e **outra** local com CRUD sem mudar o front.
-
-2. **TanStack Query para dados remotos**  
-   Cache, refetch e chaves estáveis (`eventsKeys`) centralizam o estado de servidor. O detalhe do evento é atualizado após check-in via `setQueryData` ou resposta do BFF.
-
-3. **Regras de check-in em funções puras (`registerCheckin`)**  
-   VIP (múltiplas entradas/saídas), normal (uma entrada; nova tentativa com feedback e registro de erro), evento fechado/cancelado bloqueados — tudo testável com **Vitest**, independente de HTTP.
-
-4. **Dois “modos” de API no mesmo contrato**  
-   `fetchEventDetailSnapshot` distingue JSON **aninhado** (arquivo único) de **json-server** (agrega `events` + `participants` + `checkins`). Assim um único `EventDetail` Zod vale para produção estática e para dev com escrita.
-
-5. **Client Components só onde necessário**  
-   Listagem/detalhe com formulários, gráficos e diálogos usam `'use client'`; o restante segue RSC quando possível, alinhado às regras do repositório.
-
-6. **Zod em borda**  
-   Respostas da API e payloads de formulário são validados/parseados antes de chegar à UI, reduzindo `undefined` silencioso.
-
-7. **Redirecionar `/` → `/events`**  
-   A experiência principal é a listagem; evita uma “home” vazia e mantém uma única página de entrada ao domínio de negócio.
+1. **Next.js App Router + Route Handlers como BFF**
+  O browser chama apenas o próprio domínio (`/api/events/...`). Isso evita expor CORS e chaves em cenários futuros e permite adaptar **uma** API de leitura estática e **outra** local com CRUD sem mudar o front.
+2. **TanStack Query para dados remotos**
+  Cache, refetch e chaves estáveis (`eventsKeys`) centralizam o estado de servidor. O detalhe do evento é atualizado após check-in via `setQueryData` ou resposta do BFF.
+3. **Regras de check-in em funções puras (`registerCheckin`)**
+  VIP (múltiplas entradas/saídas), normal (uma entrada; nova tentativa com feedback e registro de erro), evento fechado/cancelado bloqueados — tudo testável com **Vitest**, independente de HTTP.
+4. **Dois “modos” de API no mesmo contrato**
+  `fetchEventDetailSnapshot` distingue JSON **aninhado** (arquivo único) de **json-server** (agrega `events` + `participants` + `checkins`). Assim um único `EventDetail` Zod vale para produção estática e para dev com escrita.
+5. **Client Components só onde necessário**
+  Listagem/detalhe com formulários, gráficos e diálogos usam `'use client'`; o restante segue RSC quando possível, alinhado às regras do repositório.
+6. **Zod em borda**
+  Respostas da API e payloads de formulário são validados/parseados antes de chegar à UI, reduzindo `undefined` silencioso.
+7. **Redirecionar `/` → `/events`**
+  A experiência principal é a listagem; evita uma “home” vazia e mantém uma única página de entrada ao domínio de negócio.
 
 ---
 
@@ -106,23 +105,21 @@ O BFF detecta o formato “coleções separadas” (`/events`, `/participants`, 
 - **Autenticação e perfis** (operador vs leitura), com proteção das rotas de mutação.
 - **Testes E2E** cobrindo listagem, filtro, detalhe e fluxo de check-in (incluindo json-server ou mocks de rede).
 - **Observabilidade**: substituir logs ad-hoc por logger estruturado e correlacionar erros BFF ↔ cliente.
-- **Acessibilidade e i18n**: revisão sistemática de `aria-*`, foco em modais, e textos externalizados se o produto for multilíngue.
-- **Otimistic updates** no check-in com rollback em falha de rede, quando a mutação remota for obrigatória.
-- **Sincronização de métricas**: garantir contrato explícito com o backend sobre `checkin_count`, `error_count` e `entry_rate` (hoje derivados/alinhados à massa de exemplo).
+- **Acessibilidade e i18n**: revisão sistemática de `aria-`*, foco em modais, e textos externalizados se o produto for multilíngue.
 
 ---
 
-## (Opcional) Uso de IA no desenvolvimento
+## Uso de IA no desenvolvimento
 
-Ferramentas de IA (ex.: assistentes no editor) podem acelerar **boilerplate**, **refactors mecânicos** e **testes unitários**, desde que o resultado seja **revisado** contra as regras do projeto (`.cursor/rules`, `AGENTS.md`, ESLint/TS strict).
+Fiz o uso de ferramentas como o cursor para acelerar o desenvolvimento utilizando técnicas recomendadas, como uso de **rules especializadas**, **MCPs**, realizando testes e fazendo code reviews, da seguinte forma:
 
-Sugestão de boas práticas:
+Estratégia utilizada:
 
-- Pedir mudanças **por escopo fechado** (“só o BFF de check-in”) para facilitar review.
-- Exigir que o código gerado **rode `lint` e `test`** antes do merge.
-- Tratar sugestões de IA como **rascunho**: arquitetura e nomes devem seguir o padrão já estabelecido no repositório.
-
-*Esta seção é opcional; ajuste ou remova conforme a política da sua equipe.*
+- **Análise e Estudo do Case Proposto** Analisei e estudei a documentação e pedi para o claude fragmentar as regras de negocio em rules para usar no cursor, além disso pedi que estruturasse um boilerplate inicial da aplicação usando a stack mencionada nesse documento.
+- **Implementação do Boileplate** Executei um prompt no cursor, gerado no claude, que gerou a estrutura da aplicação;
+- **Configuração Claude** Adicionei na Configuração do Cursor as rules com as regras do projeto;
+- **Plano de Requisitos** Executei a implementação dos requisitos com o agent do cursor, que já gerava os testes como guia nas rules;
+- **Review Final** Revisão final do Projeto;
 
 ---
 
